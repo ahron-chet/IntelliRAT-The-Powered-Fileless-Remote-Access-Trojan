@@ -14,6 +14,7 @@ This RAT effectively evades Endpoint Detection and Response (EDR) solutions by l
 - Equipped with ransomware capabilities
 - Keystroke logging functionality
 - Process hollowing while stealing web browser passwords
+- Pure Implementation of RSA algorithm in both Python and PowerShell, incorporating various mathematical algorithm
 
 ### Technical Capabilities
 The RAT establishes a secure session with RSA stream key exchange and AES encryption before proceeding to steal passwords, including browser and Windows credentials, by dumping the LSASS and SAM processes. The program uses process hollowing techniques to steal web browser passwords and includes keystroke logging and ransomware capabilities. The reverse shell can seamlessly translate text into commands with the integration of an unlimited version of CHAT GPT. The server is capable of managing multiple clients efficiently, making it a formidable threat.
