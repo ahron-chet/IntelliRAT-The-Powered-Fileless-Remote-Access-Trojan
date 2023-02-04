@@ -1,7 +1,7 @@
 # Filless AI RAT using Microsoft Teams Vulnerability
 
 ### Introduction
-This software was designed to minimize memory footprint and bypass existing Endpoint Detection and Response (EDR) solutions. The program grants complete control over a system by applying privilege escalation and utilizes cryptography to pull relevant information from the internet. The software runs under the "Nt authority user" system and uses a DLL reflective attack against Teams.exe, exploiting a security vulnerability in Microsoft Teams.
+This program was designed to minimize memory footprint and bypass existing Endpoint Detection and Response (EDR) solutions. The program grants complete control over a system by applying privilege escalation and utilizes cryptography to pull relevant information from the internet. The software runs under the "Nt authority user" system and uses a DLL reflective attack against Teams.exe, exploiting a security vulnerability in Microsoft Teams.
 
 ### Key Features
 - Memory optimization for stealthiness
