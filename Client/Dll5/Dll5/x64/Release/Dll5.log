@@ -1,0 +1,8 @@
+﻿  dllmain.cpp
+     Creating library C:\Users\aronc\source\repos\Dll5\x64\Release\Dll5.lib and object C:\Users\aronc\source\repos\Dll5\x64\Release\Dll5.exp
+  Generating code
+  2 of 2 functions (100.0%) were compiled.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  Dll5.vcxproj -> C:\Users\aronc\source\repos\Dll5\x64\Release\Dll5.dll
