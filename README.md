@@ -1,23 +1,18 @@
-# Filless AI RAT using Microsoft Teams Vulnerability
+# Fileless AI RAT Exploiting Microsoft Teams Vulnerability
 
-### Introduction
-This program was designed to minimize memory footprint and bypass existing Endpoint Detection and Response (EDR) solutions. The program grants complete control over a system by applying privilege escalation and utilizes cryptography to pull relevant information from the internet. The software runs under the "Nt authority user" system and uses a DLL reflective attack against Teams.exe, exploiting a security vulnerability in Microsoft Teams.
+Overview
+This RAT effectively evades Endpoint Detection and Response (EDR) solutions by leveraging fileless and LOLBAS techniques to gain complete control over the target system through privilege escalation. The software exploits a weakness in Microsoft Teams with a DLL reflective attack. The server is capable of managing multiple clients, making it a significant threat. The program is equipped with AI capabilities, including integration with an unlimited version of CHAT GPT, allowing the reverse shell to translate text into commands.
 
-### Key Features
-- Memory optimization for stealthiness
-- Bypasses existing EDR solutions
-- Complete control over the system through privilege escalation
-- Utilizes cryptography to pull relevant information from the internet
-- DLL reflective attack against Teams.exe
-- Exploits a security vulnerability in Microsoft Teams
-- Full implementation of the RSA algorithm in PowerShell and Python, including various matching algorithmsת
-RSA stream key exchange at the start of each session
-AES encryption with added security enhancements
-- Ability to steal passwords of browsers, Wi-Fi, and Windows credentials through LSASS and SAM dump
-- Integration with an unlimited version of CHAT GPT, allowing the reverse shell to convert textual descriptions into functional commands.
-
-### Technical Details
-The software starts by performing a stream key exchange with the RSA algorithm between the target and server. The session is then encrypted with AES, with added security enhancements. The system control provides the ability to steal passwords, including browser and Windows credentials, by performing a dump of the LSASS and SAM processes.
-
-### Conclusion
-This AI RAT software takes advantage of a security vulnerability in Microsoft Teams to grant complete control over a system, while minimizing its memory footprint and bypassing existing EDR solutions. The program integrates with an unlimited version of CHAT GPT, allowing the reverse shell to convert textual descriptions into functional commands.
+Key Features
+Memory optimization using fileless and LOLBAS techniques
+Effective bypass of EDR solutions
+Complete system control through privilege escalation
+Data exfiltration through stenography
+DLL reflective attack exploiting a vulnerability in Microsoft Teams
+Secure sessions with RSA stream key exchange and AES encryption
+Ability to steal browser, Wi-Fi, and Windows credentials through LSASS and SAM dump
+Equipped with ransomware capabilities
+Keystroke logging functionality
+Process hollowing while stealing web browser passwords
+Technical Capabilities
+The RAT establishes a secure session with RSA stream key exchange and AES encryption before proceeding to steal passwords, including browser and Windows credentials, by dumping the LSASS and SAM processes. The program uses process hollowing techniques to steal web browser passwords and includes keystroke logging and ransomware capabilities. The reverse shell can seamlessly translate text into commands with the integration of an unlimited version of CHAT GPT. The server is capable of managing multiple clients efficiently, making it a formidable threat.
