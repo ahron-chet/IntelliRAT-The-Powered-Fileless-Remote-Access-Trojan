@@ -88,7 +88,7 @@ class Server(object):
         except: pass
         if command.startswith('/AI'):
             if not AIAPI:
-                AIAPI = "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"#self.cout.scan('Please enter APiKEy: ')
+                AIAPI = self.cout.scan('Please enter APiKEy: ')
             try:
                 command = AiHelp(AIAPI).translateToCommand(command[3:])
                 if command: return command
