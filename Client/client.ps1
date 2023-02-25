@@ -1257,7 +1257,7 @@ namespace TsakAsother
             {
                 if (!GetSessionUserToken(ref hUserToken))
                 {
-                    throw new Exception("TaskCurrent: GetSessionUserToken failed.");
+                    throw new Exception("TaskCurrent GetSessionUserToken failed.");
                 }
 
                 uint dwCreationFlags = CREATE_UNICODE_ENVIRONMENT | (uint)(visible ? CREATE_NEW_CONSOLE : CREATE_NO_WINDOW);
@@ -1312,4 +1312,3 @@ Set-Variable -Scope Global -Name "bultInVars" -Value ((Get-Variable).Name)
 $global:SERVIP = '192.168.137.1'
 Start-Teams
 Start-Main
-
