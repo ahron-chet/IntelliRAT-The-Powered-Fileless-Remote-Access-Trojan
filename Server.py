@@ -88,7 +88,7 @@ class Server(object):
         except: pass
         if command.startswith('/AI'):
             if not AIAPI:
-                AIAPI = self.cout.scan('Please enter APiKEy: ')
+                AIAPI = "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"#self.cout.scan('Please enter APiKEy: ')
             try:
                 command = AiHelp(AIAPI).translateToCommand(command[3:])
                 if command: return command
@@ -240,3 +240,4 @@ if __name__=='__main__':
     print(socket.gethostbyname(socket.gethostname()))
     Server(socket.gethostbyname(socket.gethostname()),999,PRIVATE).__start__()
 
+    
